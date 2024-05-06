@@ -1,0 +1,59 @@
+# tasks file for nexus
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    
+- name: Install curl
+  apt:
+    name: curl
+    state: present
+
+- name: Install gnupg
+  apt:
+    name: gnupg
+    state: present
+
+- name: Install OpenJDK 8
+  apt:
+    name: openjdk-8-jdk
+    state: present
+
+- name: Add Nexus APT keyring
+  shell: "curl -fsSL https://download.sonatype.com/nexus/3/nexus-3.0.2-02-unix.tar.gz | sudo tar -xz -C /opt/"
+  args:
+    executable: /bin/bash
+
+- name: Set Nexus environment variables
+  shell: sudo sed -i '/^# User and group/a NEXUS_USER="nexus"\nNEXUS_GROUP="nexus"' /opt/nexus-3.0.2-02/bin/nexus.rc
+  args:
+    executable: /bin/bash
+
+- name: Change run_as_user to run_as_nexus in nexus.rc
+  become: true
+  replace:
+    path: /opt/nexus-3.0.2-02/bin/nexus.rc
+    regexp: '^run_as_user='
+    replace: 'run_as_nexus='
+
+- name: Create Nexus user
+  user:
+    name: nexus
+    system: yes
+    shell: /bin/false
+    create_home: no
+
+- name: Configure Nexus systemd service
+  template:
+    src: nexus.service.j2
+    dest: /etc/systemd/system/nexus.service
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Start Nexus service
+  service:
+    name: nexus
+    state: started
+    enabled: yes

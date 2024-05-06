@@ -1,0 +1,32 @@
+---
+- hosts: all
+  name: create groups & users
+  become: yes
+  remote_user: ubuntu
+
+  tasks:
+    - name: Create developers group
+      group:
+        name: developers
+        state: present
+
+    - name: Create devops group
+      group:
+        name: devops
+        state: present
+
+    - name: Create users and add them to respective groups
+      user:
+        name: "{{ item.name }}"
+        groups: "{{ item.groups }}"
+        create_home: yes
+        expires: "{{ item.expires }}"
+        state: present
+      loop: 
+       - {name: user1, groups: developers, expires: "12345678"}
+       - {name: user2, groups: devops, expires: "-1"}
+
+    - name: Generate SSH key for user1
+      user:
+        name: user1
+        generate_ssh_key: true

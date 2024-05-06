@@ -1,0 +1,6 @@
+- name: Jenkins Setup
+  hosts: jenkins
+  become: true
+  remote_user: ubuntu
+  roles:
+    - nginx

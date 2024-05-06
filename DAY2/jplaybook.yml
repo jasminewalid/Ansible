@@ -1,0 +1,16 @@
+- name: Jenkins Setup
+  hosts: jenkins
+  become: true
+  remote_user: ubuntu
+  roles:
+    - jenkins
+
+# - name: Nexus Setup
+#   hosts: nexus
+#   become: true
+#   remote_user: ubuntu
+#   vars:
+#     NEXUS_USER: nexus
+#     NEXUS_GROUP: nexus
+#   roles:
+#     - nexus

@@ -1,0 +1,15 @@
+[Unit]
+Description=Nexus Service
+After=network.target
+
+[Service]
+Type=simple
+User={{ NEXUS_USER }}
+Group={{ NEXUS_GROUP }}
+ExecStart=/opt/nexus-3.0.2-02/bin/nexus start
+ExecStop=/opt/nexus-3.0.2-02/bin/nexus stop
+ExecReload=/opt/nexus-3.0.2-02/bin/nexus restart
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

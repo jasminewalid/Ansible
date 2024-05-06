@@ -1,0 +1,59 @@
+# tasks file for nginx
+- name: Update and upgrade apt packages
+  apt:
+    update_cache: yes
+
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+  become: true
+- name: Ensure Nginx configuration directory exists
+  file:
+    path: /etc/nginx/conf.d
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Create sites-available if not exists
+  file:
+    path: /etc/nginx/sites-available
+    state: directory
+
+- name: Deploy Nexus Nginx configuration
+  template:
+    src: proxy.conf
+    dest: /etc/nginx/sites-available/proxy.conf
+
+- name: Enable Nexus site
+  file:
+    src: /etc/nginx/sites-available/proxy.conf
+    dest: /etc/nginx/sites-enabled/proxy.conf
+    state: link
+
+- name: certification directory
+  file:
+    path: /etc/ssl/private
+    state: directory
+    mode: '0755'
+ 
+- name: Generate an OpenSSL private key with the default values (4096 bits, RSA)
+  community.crypto.openssl_privatekey:
+    path: /etc/ssl/private/nginx.key
+
+- name: Generate an OpenSSL Certificate Signing Request
+  community.crypto.openssl_csr:
+    path: /etc/ssl/certs/nginx.csr
+    privatekey_path: /etc/ssl/private/nginx.key
+
+- name: Create simple self-signed certificate
+  community.crypto.x509_certificate:
+    path: /etc/ssl/certs/nginx.cst
+    privatekey_path: /etc/ssl/private/nginx.key
+    csr_path: /etc/ssl/certs/nginx.csr
+    provider: selfsigned
+
+- name: Reload Nginx to apply new configuration
+  systemd:
+    name: nginx
+    state: reloaded

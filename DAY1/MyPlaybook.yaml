@@ -1,0 +1,22 @@
+---
+- hosts: all
+  name: nginx
+  become: yes
+  remote_user: ubuntu
+  vars:
+    user_name: "Jasmine"
+  tasks:
+    - name: Install Nginx
+      package:
+        name: nginx
+        state: present
+
+    - name: Copy index.html to Nginx directory
+      template: 
+        src: /home/jasmine/ANSIBLE/DAY1/index.html
+        dest: /var/www/html
+
+    - name: Ensure Nginx is running
+      service:
+        name: nginx
+        state: started
